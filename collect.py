@@ -2,18 +2,14 @@ import os
 import time
 import cv2
 
-KEYS = {
-  ord("1"): "pedra", ord("p"): "pedra",
-  ord("2"): "papel", ord("a"): "papel",
-  ord("3"): "tesoura", ord("t"): "tesoura",
-  ord("4"): "nada", ord("n"): "nada",
-}
+CLASSES = ["A", "B", "C", "D", "I", "L", "O", "V", "W", "Y", "nada"]
+KEYS = {ord(c[0].lower()): c for c in CLASSES}  # tecla = primeira letra (n = nada)
+assert len(KEYS) == len(CLASSES) and ord("q") not in KEYS, "tecla repetida ou conflita com q"
 
-CLASSES = ["pedra", "papel", "tesoura", "nada"]
 DATA_DIR = "data"
 IMG_SIZE = 224
 SAVE_EVERY_N_FRAMES = 3
-MAX_PER_CLASS = 150
+MAX_PER_CLASS = 300
 COUNTDOWN = 3.0
 DEBOUNCE = 0.5
 
@@ -36,7 +32,7 @@ last_key_time = 0
 frame_count = 0
 WIN = "Coleta"
 
-print("Janela aberta. Clique nela e aperte 1/2/3/4 (ou p/a/t/n). 'q' sai.")
+print("Janela aberta. Clique nela e aperte a tecla da letra (n = nada). 'q' sai.")
 
 while True:
     ok, frame = cap.read()
@@ -50,7 +46,7 @@ while True:
     x1, y1 = w // 2 - side // 2, h // 2 - side // 2
     roi = frame[y1:y1 + side, x1:x1 + side]
 
-    status, color = "PARADO - aperte 1/2/3/4 na janela", (0, 255, 0)
+    status, color = "PARADO - aperte a letra na janela", (0, 255, 0)
 
     if recording and countdown_start is not None:
         left = COUNTDOWN - (time.time() - countdown_start)
@@ -73,7 +69,7 @@ while True:
     cv2.rectangle(frame, (x1, y1), (x1 + side, y1 + side), color, 3)
     cv2.putText(frame, status, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
     for i, c in enumerate(CLASSES):
-        cv2.putText(frame, f"[{i + 1}/{c[0]}] {c}: {count(c)}/{MAX_PER_CLASS}", (10, 65 + i * 28),
+        cv2.putText(frame, f"[{c[0].lower()}] {c}: {count(c)}/{MAX_PER_CLASS}", (10, 65 + i * 28),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
     cv2.imshow(WIN, frame)

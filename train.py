@@ -7,6 +7,7 @@ import tensorflow as tf
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw, ImageFont
 
 DATA_DIR = "data"
 IMG_SIZE = 224
@@ -103,5 +104,44 @@ print("\nMatriz de confusao (linhas = real, colunas = previsto):")
 print(" " * 11 + " ".join(f"{c[:7]:>7}" for c in class_names))
 for i, c in enumerate(class_names):
     print(f"{c[:10]:>10} " + " ".join(f"{v:>7}" for v in cm[i]))
+
+
+def gerar_pdf_dataset(data_dir="data", saida="dataset_imagens.pdf", cols=10, qualidade=70):
+    pag_w, pag_h, margem, topo = 1240, 1754, 40, 110
+    cell = (pag_w - 2 * margem) // cols
+    rows = (pag_h - topo - margem) // cell
+    por_pagina = cols * rows
+    try:
+        fonte = ImageFont.load_default(size=30)
+    except TypeError:
+        fonte = ImageFont.load_default()
+
+    paginas = []
+    classes = sorted(d for d in os.listdir(data_dir)
+                     if os.path.isdir(os.path.join(data_dir, d)))
+    for classe in classes:
+        pasta = os.path.join(data_dir, classe)
+        fotos = sorted(f for f in os.listdir(pasta) if f.lower().endswith(".jpg"))
+        n_pag = max(1, -(-len(fotos) // por_pagina))
+        for p in range(n_pag):
+            pagina = Image.new("RGB", (pag_w, pag_h), "white")
+            draw = ImageDraw.Draw(pagina)
+            draw.text((margem, 40),
+                      f"Classe: {classe} | {len(fotos)} imagens | pagina {p + 1}/{n_pag}",
+                      fill="black", font=fonte)
+            for i, nome in enumerate(fotos[p * por_pagina:(p + 1) * por_pagina]):
+                img = Image.open(os.path.join(pasta, nome)).convert("RGB")
+                img.thumbnail((cell - 6, cell - 6))
+                x = margem + (i % cols) * cell + 3
+                y = topo + (i // cols) * cell + 3
+                pagina.paste(img, (x, y))
+            paginas.append(pagina)
+
+    paginas[0].save(saida, save_all=True, append_images=paginas[1:],
+                    quality=qualidade, resolution=150)
+    print(f"PDF salvo: {saida} ({len(paginas)} paginas)")
+
+
+gerar_pdf_dataset(DATA_DIR)
 
 print("\nPronto! Modelo salvo em gesture_model.keras. Agora rode: python play.py")
