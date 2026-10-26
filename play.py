@@ -9,6 +9,7 @@ IMG_SIZE = 224
 
 model = tf.keras.models.load_model("gesture_model.keras")
 class_names = json.load(open("class_names.json"))
+BAR_X = 20 + max(cv2.getTextSize(c, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0][0] for c in class_names)
 
 
 def predict(roi):
@@ -17,11 +18,11 @@ def predict(roi):
     return class_names[int(np.argmax(probs))], float(np.max(probs)), probs
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)  # camera padrao do sistema
 if not cap.isOpened():
     raise SystemExit("Nao consegui abrir a webcam.")
 
-recent = deque(maxlen=7)  # suaviza: voto da maioria nos ultimos frames
+recent = deque(maxlen=7)  
 
 while True:
     ok, frame = cap.read()
@@ -43,15 +44,16 @@ while True:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
 
     # barras de probabilidade (otimo para mostrar a "incerteza" do modelo)
+    bar_max = max(0, x1 - 10 - BAR_X)  # barra cheia termina antes da caixa de captura
     for i, c in enumerate(class_names):
-        bw = int(probs[i] * 150)
-        cv2.rectangle(frame, (10, 50 + i * 22), (10 + bw, 64 + i * 22), (0, 200, 255), -1)
-        cv2.putText(frame, c, (170, 63 + i * 22), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        bw = int(probs[i] * bar_max)
+        cv2.putText(frame, c, (10, 63 + i * 22), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.rectangle(frame, (BAR_X, 50 + i * 22), (BAR_X + bw, 64 + i * 22), (0, 200, 255), -1)
 
     cv2.putText(frame, f"Letra: {stable}", (10, h - 20), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 0), 4)
     cv2.imshow("Reconhecimento de Libras", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
+    if cv2.waitKey(1) & 0xFF in (ord("q"), 27):  # q ou ESC
         break
 
 cap.release()

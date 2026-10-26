@@ -21,10 +21,10 @@ def count(cls):
     return len([f for f in os.listdir(os.path.join(DATA_DIR, cls)) if f.endswith(".jpg")])
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)  # camera padrao do sistema
 if not cap.isOpened():
     raise SystemExit("Nao consegui abrir a webcam. Feche outros apps que usam a camera "
-                     "(Zoom, Meet...) ou tente cv2.VideoCapture(1).")
+                     "(Zoom, Meet...).")
 
 recording = None  # classe sendo gravada
 countdown_start = None
@@ -32,7 +32,7 @@ last_key_time = 0
 frame_count = 0
 WIN = "Coleta"
 
-print("Janela aberta. Clique nela e aperte a tecla da letra (n = nada). 'q' sai.")
+print("Janela aberta. Clique nela e aperte a tecla da letra (n = nada). 'q' ou ESC sai.")
 
 while True:
     ok, frame = cap.read()
@@ -77,7 +77,7 @@ while True:
     key = cv2.waitKey(10) & 0xFF
     if key == 255:
         continue
-    if key == ord("q"):
+    if key in (ord("q"), 27):  # q ou ESC
         break
     if key in KEYS and time.time() - last_key_time > DEBOUNCE:
         last_key_time = time.time()
