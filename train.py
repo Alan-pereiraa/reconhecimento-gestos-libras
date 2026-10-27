@@ -22,13 +22,15 @@ class_names = sorted(d for d in os.listdir(DATA_DIR)
                      if os.path.isdir(os.path.join(DATA_DIR, d)))
 print("Classes:", class_names)
 
-# Split por BLOCOS no tempo (ultimos 20% de cada classe = validacao).
-# Se sorteassemos aleatoriamente, frames quase identicos cairiam em treino e
-# validacao e a acuracia ficaria enganosamente alta (vazamento de dados).
+# Split aleatorio por classe (20% de cada classe = validacao).
+# As imagens sao embaralhadas para que treino e validacao tenham os dois
+# fundos (claro e escuro). Atencao: frames vizinhos sao quase identicos, entao
+# a acuracia de validacao tende a ficar otimista.
 train_paths, train_y, val_paths, val_y = [], [], [], []
 for idx, cls in enumerate(class_names):
     files = sorted(os.listdir(os.path.join(DATA_DIR, cls)))
     files = [os.path.join(DATA_DIR, cls, f) for f in files if f.lower().endswith(".jpg")]
+    random.shuffle(files)  # reprodutivel por causa do random.seed(SEED)
     cut = int(len(files) * (1 - VAL_FRACTION))
     train_paths += files[:cut]; train_y += [idx] * cut
     val_paths += files[cut:]; val_y += [idx] * (len(files) - cut)

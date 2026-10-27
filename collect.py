@@ -21,7 +21,7 @@ def count(cls):
     return len([f for f in os.listdir(os.path.join(DATA_DIR, cls)) if f.endswith(".jpg")])
 
 
-cap = cv2.VideoCapture(2)  # camera padrao do sistema
+cap = cv2.VideoCapture(1)  # camera padrao do sistema
 if not cap.isOpened():
     raise SystemExit("Nao consegui abrir a webcam. Feche outros apps que usam a camera "
                      "(Zoom, Meet...).")
