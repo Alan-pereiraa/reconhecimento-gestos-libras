@@ -105,7 +105,7 @@ print(" " * 11 + " ".join(f"{c[:7]:>7}" for c in class_names))
 for i, c in enumerate(class_names):
     print(f"{c[:10]:>10} " + " ".join(f"{v:>7}" for v in cm[i]))
 
-
+# Gerar o documento PDF com as imagens de treinamento
 def gerar_pdf_dataset(data_dir="data", saida="dataset_imagens.pdf", cols=10, qualidade=70):
     pag_w, pag_h, margem, topo = 1240, 1754, 40, 110
     cell = (pag_w - 2 * margem) // cols
